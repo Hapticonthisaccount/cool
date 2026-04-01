@@ -1,406 +1,338 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>lnkhide</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>lnkhide — Discord Link Hider</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#080808;--surface:#111;--border:#1e1e1e;--border-hi:#333;
-  --text:#e8e8e8;--muted:#555;--success:#39ff14;--danger:#ff4545;
-  --mono:'DM Mono',monospace;--display:'Syne',sans-serif;
+  --bg:#080808;--surf:#0f0f0f;--border:#1a1a1a;--hi:#2a2a2a;
+  --text:#e0e0e0;--muted:#444;--green:#39ff14;--red:#ff4545;--blue:#4fa3ff;
+  --mono:'DM Mono',monospace;--head:'Syne',sans-serif;
 }
-body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;
-  background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
-                   linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
-  background-size:40px 40px;pointer-events:none;z-index:0}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;padding:52px 16px 80px;overflow-x:hidden}
 
-#view-create,#view-redirect{position:relative;z-index:1}
-#view-redirect{display:none}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:36px 36px}
 
-/* ── CREATE ── */
-.page{max-width:660px;margin:0 auto;padding:60px 20px 80px}
-.logo{font-family:var(--display);font-weight:800;font-size:clamp(2rem,6vw,3rem);
-  letter-spacing:-.03em;color:#fff;line-height:1;margin-bottom:6px}
-.logo span{color:var(--muted)}
-.tagline{font-size:10px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:52px}
+.wrap{width:100%;max-width:580px;position:relative;z-index:1}
 
-.card{background:var(--surface);border:1px solid var(--border);padding:30px;margin-bottom:12px;position:relative}
+/* header */
+h1{font-family:var(--head);font-weight:800;font-size:2.6rem;letter-spacing:-.03em;
+  color:#fff;line-height:1;margin-bottom:4px}
+h1 span{color:var(--muted)}
+.sub{font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-bottom:44px}
+
+/* card */
+.card{background:var(--surf);border:1px solid var(--border);padding:28px;margin-bottom:10px;position:relative}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)}
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent)}
 
-.sec{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);
-  margin-bottom:18px;display:flex;align-items:center;gap:10px}
-.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+.label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  margin-bottom:7px;display:block}
 
-.field{margin-bottom:17px}.field:last-child{margin-bottom:0}
-label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
-input,textarea{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
   font-family:var(--mono);font-size:13px;padding:11px 13px;outline:none;
-  transition:border-color .15s;resize:none;border-radius:0;-webkit-appearance:none}
-input:focus,textarea:focus{border-color:var(--border-hi)}
-input::placeholder,textarea::placeholder{color:#252525}
-.hint{font-size:10px;color:#2e2e2e;margin-top:5px;line-height:1.5}
-.err{font-size:11px;color:var(--danger);margin-top:6px;display:none}.err.on{display:block}
+  border-radius:0;-webkit-appearance:none;transition:border-color .15s}
+input:focus{border-color:var(--hi)}
+input::placeholder{color:#222}
 
-.style-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.sopt{border:1px solid var(--border);padding:12px 14px;cursor:pointer;
-  transition:border-color .15s,background .15s;position:relative}
-.sopt:hover{border-color:var(--border-hi)}
-.sopt.active{border-color:var(--text);background:rgba(255,255,255,.03)}
-.sopt.active::after{content:'✓';position:absolute;top:8px;right:10px;font-size:10px;color:var(--success)}
-.sopt-name{font-size:11px;font-weight:500;margin-bottom:3px}
-.sopt-desc{font-size:10px;color:var(--muted);line-height:1.4}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.field{margin-bottom:10px}.field:last-child{margin-bottom:0}
 
-.dc-wrap{background:#313338;border-radius:4px;padding:14px}
-.dc-bar{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
-  margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.dc-bar::before{content:'';width:8px;height:8px;border-radius:50%;background:#5865f2;display:inline-block}
-.dc-embed{background:#2b2d31;border-left:4px solid #5865f2;border-radius:0 4px 4px 0;padding:10px 14px;max-width:420px}
-.dc-site{font-size:11px;color:#b5bac1;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dc-title{font-size:14px;font-weight:600;color:#00b0f4;margin-bottom:5px;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dc-desc{font-size:13px;color:#dbdee1;line-height:1.5;font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.err{font-size:10px;color:var(--red);margin-top:5px;display:none}.err.on{display:block}
+.hint{font-size:10px;color:#282828;margin-top:5px;line-height:1.5}
 
-.btn-gen{width:100%;padding:15px;background:var(--text);color:var(--bg);border:none;
-  font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.08em;
-  text-transform:uppercase;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:18px}
-.btn-gen:hover{opacity:.88}.btn-gen:active{transform:scale(.99)}
+/* preview box */
+.preview-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px}
+.dc-mock{background:#313338;border-radius:6px;padding:14px 16px;display:flex;align-items:flex-start;gap:10px}
+.dc-avatar{width:36px;height:36px;border-radius:50%;background:#5865f2;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;
+  color:#fff;font-family:var(--head)}
+.dc-bubble{flex:1}
+.dc-name{font-size:11px;color:#00b0f4;font-weight:600;margin-bottom:4px;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+.dc-msg{font-size:14px;color:#dbdee1;line-height:1.5;word-break:break-word;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+.dc-msg a{color:#00b0f4;text-decoration:none}
+.dc-msg a:hover{text-decoration:underline}
 
-.out-card{background:var(--surface);border:1px solid var(--border);padding:26px 30px;display:none;margin-top:12px}
-.out-card.on{display:block;animation:fu .3s ease}
-@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* generate btn */
+.btn{width:100%;padding:14px;background:var(--text);color:var(--bg);border:none;
+  font-family:var(--head);font-weight:700;font-size:13px;letter-spacing:.08em;
+  text-transform:uppercase;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:16px}
+.btn:hover{opacity:.85}.btn:active{transform:scale(.99)}
 
-.links-list{display:flex;flex-direction:column;gap:8px}
-.link-row{background:var(--bg);border:1px solid var(--border);padding:12px 14px;
-  display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.lri{flex:1;min-width:0}
-.lru{font-size:12px;color:var(--success);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
-.lrd{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lrt{font-size:10px;color:#3a3a3a;white-space:nowrap}
-.lra{display:flex;gap:6px;flex-shrink:0}
-.btn-sm{padding:6px 12px;border:1px solid var(--border-hi);background:transparent;
+/* output */
+.output-wrap{margin-top:10px;display:none}.output-wrap.on{display:block;animation:up .25s ease}
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.out-box{background:var(--bg);border:1px solid var(--border);padding:14px;
+  display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.out-text{flex:1;font-size:13px;color:var(--green);word-break:break-all;line-height:1.5}
+.out-copy{padding:7px 14px;background:transparent;border:1px solid var(--hi);
   color:var(--text);font-family:var(--mono);font-size:10px;cursor:pointer;
-  transition:background .15s;white-space:nowrap;letter-spacing:.05em}
-.btn-sm:hover{background:rgba(255,255,255,.06)}
-.btn-sm.del{border-color:#2a2a2a;color:var(--danger)}
-.btn-sm.del:hover{background:rgba(255,69,69,.07)}
-.empty{font-size:11px;color:#252525;text-align:center;padding:18px 0}
+  white-space:nowrap;transition:background .15s;letter-spacing:.06em;flex-shrink:0}
+.out-copy:hover{background:rgba(255,255,255,.05)}
+.out-copy.ok{border-color:var(--green);color:var(--green)}
 
-/* ── REDIRECT ── */
-#view-redirect{min-height:100vh;background:#000;display:flex;align-items:center;justify-content:center}
-.rdr-inner{text-align:center}
-.rdr-btn{color:#fff;font-family:var(--mono);font-size:13px;text-decoration:none;
-  border:1px solid #1e1e1e;padding:12px 28px;letter-spacing:.1em;
-  transition:background .15s;display:inline-block}
-.rdr-btn:hover{background:rgba(255,255,255,.07)}
-.rdr-sub{font-size:10px;color:#2a2a2a;margin-top:12px;letter-spacing:.1em}
+.tip-box{background:var(--surf);border:1px solid var(--border);padding:14px 16px;margin-bottom:8px}
+.tip-title{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.tip{font-size:11px;color:#3a3a3a;margin-bottom:6px;line-height:1.6;padding-left:12px;position:relative}
+.tip::before{content:'—';position:absolute;left:0;color:#282828}
+.tip:last-child{margin-bottom:0}
+.tip code{color:#555;background:#141414;padding:1px 5px}
 
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);
-  background:var(--surface);border:1px solid var(--border-hi);color:var(--text);
-  font-family:var(--mono);font-size:11px;padding:9px 18px;opacity:0;
-  transition:opacity .2s,transform .2s;pointer-events:none;z-index:999;white-space:nowrap}
+/* history */
+.hist-card{background:var(--surf);border:1px solid var(--border);padding:24px 28px;margin-bottom:10px}
+.hist-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.hist-title{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.hist-clear{font-size:10px;color:#333;cursor:pointer;letter-spacing:.06em;
+  padding:4px 8px;border:1px solid #1a1a1a;background:transparent;
+  font-family:var(--mono);transition:color .15s,border-color .15s}
+.hist-clear:hover{color:var(--red);border-color:#2a1a1a}
+
+.hist-list{display:flex;flex-direction:column;gap:6px}
+.hist-row{background:var(--bg);border:1px solid var(--border);padding:10px 12px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hr-text{flex:1;min-width:0}
+.hr-main{font-size:11px;color:var(--green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.hr-dest{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hr-ttl{font-size:10px;color:#2a2a2a;white-space:nowrap;flex-shrink:0}
+.hr-btn{padding:5px 10px;border:1px solid var(--hi);background:transparent;
+  color:var(--text);font-family:var(--mono);font-size:10px;cursor:pointer;transition:background .15s}
+.hr-btn:hover{background:rgba(255,255,255,.05)}
+.hr-btn.del{border-color:#1e1e1e;color:#333}.hr-btn.del:hover{color:var(--red);border-color:#2a1212}
+
+.empty{font-size:11px;color:#1e1e1e;text-align:center;padding:16px 0}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--surf);border:1px solid var(--hi);color:var(--text);
+  font-family:var(--mono);font-size:11px;padding:8px 18px;opacity:0;
+  transition:opacity .18s,transform .18s;pointer-events:none;z-index:999;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<!-- CREATE VIEW -->
-<div id="view-create">
-<div class="page">
+  <h1>lnk<span>hide</span></h1>
+  <div class="sub">Discord Markdown Link Disguiser</div>
 
-  <div class="logo">lnk<span>hide</span></div>
-  <div class="tagline">Discord Embed Disguiser &mdash; links expire in 8 hours</div>
-
+  <!-- Input card -->
   <div class="card">
-    <div class="sec">01 &mdash; URLs</div>
     <div class="field">
-      <label>Real URL (where they actually go)</label>
-      <input id="realUrl" type="url" placeholder="https://actual-destination.com" />
-      <div class="err" id="err-real">Please enter a valid URL (https://...)</div>
+      <label class="label">Text shown in Discord</label>
+      <input id="visText" type="text" placeholder="click here, free stuff, etc."
+             oninput="updatePreview()" maxlength="200"/>
+      <div class="err" id="err-text">Enter the visible text</div>
     </div>
     <div class="field">
-      <label>Fake URL shown in Discord embed</label>
-      <input id="fakeUrl" type="url" placeholder="https://something-innocent.com" />
-      <div class="hint">Appears as the embed site name / footer in Discord.</div>
-      <div class="err" id="err-fake">Please enter a valid URL (https://...)</div>
+      <label class="label">Real URL (hidden behind the text)</label>
+      <input id="realUrl" type="url" placeholder="https://your-actual-link.com"
+             oninput="updatePreview()"/>
+      <div class="err" id="err-url">Enter a valid URL (https://...)</div>
     </div>
-  </div>
-
-  <div class="card">
-    <div class="sec">02 &mdash; Discord Embed</div>
-    <div class="field">
-      <label>Embed Title</label>
-      <input id="eTitle" type="text" placeholder="Click here for the docs" maxlength="120" />
-    </div>
-    <div class="field">
-      <label>Description</label>
-      <textarea id="eDesc" rows="2" placeholder="A short description shown below the title..."></textarea>
-    </div>
-    <div class="field">
-      <label>Site Name (shows above title)</label>
-      <input id="eSite" type="text" placeholder="GitHub &middot; Documentation" maxlength="60" />
-    </div>
-    <div class="field">
-      <label>Live Preview</label>
-      <div class="dc-wrap">
-        <div class="dc-bar">Discord &mdash; #general</div>
-        <div class="dc-embed">
-          <div class="dc-site" id="pv-site">GitHub &middot; Documentation</div>
-          <div class="dc-title" id="pv-title">Click here for the docs</div>
-          <div class="dc-desc" id="pv-desc">A short description shown below the title...</div>
+    <div class="field" style="margin-top:4px">
+      <div class="preview-label">Preview in Discord</div>
+      <div class="dc-mock">
+        <div class="dc-avatar">Y</div>
+        <div class="dc-bubble">
+          <div class="dc-name">you</div>
+          <div class="dc-msg" id="dc-preview">
+            hey check this out <a href="#">click here</a>
+          </div>
         </div>
       </div>
+      <div class="hint">This is exactly how it looks. No embed, no preview — just a clickable word.</div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="sec">03 &mdash; Redirect Style</div>
-    <div class="style-grid">
-      <div class="sopt active" data-s="instant" onclick="selStyle(this)">
-        <div class="sopt-name">Instant</div>
-        <div class="sopt-desc">Redirects immediately, no visible page.</div>
-      </div>
-      <div class="sopt" data-s="delay" onclick="selStyle(this)">
-        <div class="sopt-name">1s Delay</div>
-        <div class="sopt-desc">Brief pause before redirect.</div>
-      </div>
-      <div class="sopt" data-s="black" onclick="selStyle(this)">
-        <div class="sopt-name">Black Flash</div>
-        <div class="sopt-desc">Black screen then redirect after 0.5s.</div>
-      </div>
-      <div class="sopt" data-s="click" onclick="selStyle(this)">
-        <div class="sopt-name">Click to Go</div>
-        <div class="sopt-desc">User must click a button to continue.</div>
-      </div>
+  <button class="btn" onclick="generate()">Generate &amp; Copy ↗</button>
+
+  <!-- Output -->
+  <div class="output-wrap" id="outWrap">
+    <div class="out-box">
+      <div class="out-text" id="outText"></div>
+      <button class="out-copy" id="copyBtn" onclick="copyOut()">Copy</button>
+    </div>
+    <div class="tip-box">
+      <div class="tip-title">How to use in Discord</div>
+      <div class="tip">Paste as-is. The text shows as a blue clickable link, the URL stays hidden.</div>
+      <div class="tip">Works in DMs, servers, anywhere Discord renders markdown.</div>
+      <div class="tip">Wrap in <code>&lt; &gt;</code> to also suppress any embed: <code>&lt;[text](url)&gt;</code></div>
+      <div class="tip">Does NOT work in Discord usernames or status — only in messages.</div>
     </div>
   </div>
 
-  <button class="btn-gen" onclick="generate()">Generate Link &nearr;</button>
-
-  <div class="out-card" id="outCard">
-    <div class="sec">Active Links</div>
-    <div class="links-list" id="linksList"></div>
+  <!-- History -->
+  <div class="hist-card" id="histCard" style="display:none">
+    <div class="hist-header">
+      <div class="hist-title">Recent — expires after 8h</div>
+      <button class="hist-clear" onclick="clearAll()">Clear all</button>
+    </div>
+    <div class="hist-list" id="histList"></div>
   </div>
 
-</div>
-</div>
-
-<!-- REDIRECT VIEW -->
-<div id="view-redirect">
-  <div class="rdr-inner" id="rdrInner">
-    <a class="rdr-btn" id="rdrBtn" href="#">Continue &rarr;</a>
-    <div class="rdr-sub">You are being redirected&hellip;</div>
-  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const STORE_KEY = 'lnkhide_v1';
-const TTL       = 8 * 60 * 60 * 1000; // 8 hours in ms
+const KEY = 'lnkhide_v2';
+const TTL = 8 * 60 * 60 * 1000;
 
-/* ── storage ── */
-function loadLinks() {
+function load() {
   try {
-    const raw = localStorage.getItem(STORE_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw).filter(l => Date.now() - l.created < TTL);
-  } catch { return []; }
+    const r = localStorage.getItem(KEY);
+    if (!r) return [];
+    return JSON.parse(r).filter(function(l){ return Date.now()-l.ts < TTL; });
+  } catch(e){ return []; }
 }
-function saveLinks(arr) {
-  localStorage.setItem(STORE_KEY, JSON.stringify(arr));
-}
+function save(arr){ localStorage.setItem(KEY, JSON.stringify(arr)); }
 
-/* ── routing via hash ── */
-function getSlug() {
-  const h = location.hash; // #/abc1234567
-  if (h && h.startsWith('#/')) return h.slice(2).trim() || null;
-  return null;
-}
-
-function route() {
-  saveLinks(loadLinks()); // prune expired
-  const slug = getSlug();
-  if (slug) {
-    const match = loadLinks().find(l => l.slug === slug);
-    if (match) { doRedirect(match); return; }
-    showCreate();
-    showToast('Link expired or not found.');
-  } else {
-    showCreate();
-  }
+function updatePreview() {
+  var text = document.getElementById('visText').value || 'click here';
+  var url  = document.getElementById('realUrl').value || '#';
+  var safe = url.replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  document.getElementById('dc-preview').innerHTML =
+    'hey check this out <a href="'+safe+'" onclick="return false">'+
+    escHtml(text)+'</a>';
 }
 
-function showCreate() {
-  document.getElementById('view-create').style.display = '';
-  document.getElementById('view-redirect').style.display = 'none';
-  renderList();
+function escHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function doRedirect(link) {
-  document.getElementById('view-create').style.display = 'none';
-  const rv = document.getElementById('view-redirect');
-  rv.style.display = 'flex';
+var lastOut = '';
 
-  const s = link.style || 'instant';
-  if (s === 'instant') {
-    location.replace(link.realUrl);
-  } else if (s === 'delay') {
-    setTimeout(() => location.replace(link.realUrl), 1000);
-  } else if (s === 'black') {
-    rv.style.background = '#000';
-    document.getElementById('rdrInner').innerHTML = '';
-    setTimeout(() => location.replace(link.realUrl), 500);
-  } else if (s === 'click') {
-    document.getElementById('rdrInner').innerHTML =
-      '<a class="rdr-btn" href="' + xss(link.realUrl) + '">Continue &rarr;</a>' +
-      '<div class="rdr-sub">Click to proceed</div>';
-  }
+function generate() {
+  var text = document.getElementById('visText').value.trim();
+  var url  = document.getElementById('realUrl').value.trim();
+
+  var et = document.getElementById('err-text');
+  var eu = document.getElementById('err-url');
+  et.classList.remove('on'); eu.classList.remove('on');
+
+  var ok = true;
+  if (!text) { et.classList.add('on'); ok = false; }
+  if (!isUrl(url)) { eu.classList.add('on'); ok = false; }
+  if (!ok) return;
+
+  var out = '['+text+']('+url+')';
+  lastOut = out;
+
+  document.getElementById('outText').textContent = out;
+  document.getElementById('outWrap').classList.add('on');
+
+  var copyBtn = document.getElementById('copyBtn');
+  copyBtn.classList.remove('ok');
+  copyBtn.textContent = 'Copy';
+
+  // save to history
+  var links = load();
+  links.unshift({ text:text, url:url, out:out, ts:Date.now() });
+  if (links.length > 20) links = links.slice(0, 20);
+  save(links);
+
+  copyOut(true);
+  renderHistory();
 }
 
-function xss(s) {
-  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-/* ── live preview ── */
-function bind(inId, pvId, fb) {
-  document.getElementById(inId).addEventListener('input', function() {
-    document.getElementById(pvId).textContent = this.value || fb;
-  });
-}
-bind('eTitle', 'pv-title', 'Click here for the docs');
-bind('eDesc',  'pv-desc',  'A short description shown below the title...');
-bind('eSite',  'pv-site',  'GitHub \u00b7 Documentation');
-
-/* ── style picker ── */
-var selectedStyle = 'instant';
-function selStyle(el) {
-  document.querySelectorAll('.sopt').forEach(function(o) { o.classList.remove('active'); });
-  el.classList.add('active');
-  selectedStyle = el.dataset.s;
-}
-
-/* ── generate ── */
-function randSlug() {
-  var c = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  return Array.from({length:12}, function() { return c[Math.floor(Math.random()*c.length)]; }).join('');
+function copyOut(silent) {
+  if (!lastOut) return;
+  cp(lastOut);
+  var btn = document.getElementById('copyBtn');
+  btn.textContent = 'Copied!';
+  btn.classList.add('ok');
+  setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('ok'); }, 2000);
+  if (!silent) toast('Copied!');
+  else toast('Generated & copied to clipboard!');
 }
 
 function isUrl(s) {
-  try { var u = new URL(s); return u.protocol==='https:'||u.protocol==='http:'; }
-  catch(e) { return false; }
+  try { var u=new URL(s); return u.protocol==='https:'||u.protocol==='http:'; }
+  catch(e){ return false; }
 }
 
-function generate() {
-  var realUrl = document.getElementById('realUrl').value.trim();
-  var fakeUrl = document.getElementById('fakeUrl').value.trim();
-  var title   = document.getElementById('eTitle').value.trim() || 'Click here';
-  var desc    = document.getElementById('eDesc').value.trim() || '';
-  var site    = document.getElementById('eSite').value.trim() || 'Website';
+function renderHistory() {
+  var links = load();
+  var card = document.getElementById('histCard');
+  var list = document.getElementById('histList');
 
-  var er = document.getElementById('err-real');
-  var ef = document.getElementById('err-fake');
-  er.classList.remove('on'); ef.classList.remove('on');
+  if (!links.length) { card.style.display='none'; return; }
+  card.style.display='block';
 
-  var ok = true;
-  if (!isUrl(realUrl)) { er.classList.add('on'); ok = false; }
-  if (!isUrl(fakeUrl)) { ef.classList.add('on'); ok = false; }
-  if (!ok) return;
-
-  var slug = randSlug();
-  var link = { slug:slug, realUrl:realUrl, fakeUrl:fakeUrl, title:title, desc:desc, site:site, style:selectedStyle, created:Date.now() };
-
-  var links = loadLinks();
-  links.unshift(link);
-  saveLinks(links);
-
-  // clear form
-  ['realUrl','fakeUrl','eTitle','eDesc','eSite'].forEach(function(id){ document.getElementById(id).value=''; });
-  document.getElementById('pv-title').textContent = 'Click here for the docs';
-  document.getElementById('pv-desc').textContent  = 'A short description shown below the title...';
-  document.getElementById('pv-site').textContent  = 'GitHub \u00b7 Documentation';
-
-  document.getElementById('outCard').classList.add('on');
-  renderList();
-
-  var url = location.origin + location.pathname + '#/' + slug;
-  copyText(url);
-  showToast('Link generated & copied!');
-}
-
-/* ── render list ── */
-function renderList() {
-  var links = loadLinks();
-  var list  = document.getElementById('linksList');
-  var card  = document.getElementById('outCard');
-
-  if (!links.length) {
-    list.innerHTML = '<div class="empty">No active links yet. Generate one above.</div>';
-    return;
-  }
-
-  card.classList.add('on');
   var now = Date.now();
-  list.innerHTML = links.map(function(l) {
-    var left = TTL - (now - l.created);
+  list.innerHTML = links.map(function(l,i){
+    var left = TTL-(now-l.ts);
     var h = Math.floor(left/3600000);
     var m = Math.floor((left%3600000)/60000);
-    var url = location.origin + location.pathname + '#/' + l.slug;
-    return '<div class="link-row">' +
-      '<div class="lri">' +
-        '<div class="lru" title="' + xss(url) + '">' + xss(url) + '</div>' +
-        '<div class="lrd">&rarr; ' + xss(l.realUrl) + '</div>' +
-      '</div>' +
-      '<div class="lrt">' + h + 'h ' + m + 'm</div>' +
-      '<div class="lra">' +
-        '<button class="btn-sm" onclick="copyLink(\'' + l.slug + '\')">Copy</button>' +
-        '<button class="btn-sm del" onclick="delLink(\'' + l.slug + '\')">Del</button>' +
-      '</div>' +
+    return '<div class="hist-row">'+
+      '<div class="hr-text">'+
+        '<div class="hr-main">'+escHtml(l.out)+'</div>'+
+        '<div class="hr-dest">'+escHtml(l.url)+'</div>'+
+      '</div>'+
+      '<div class="hr-ttl">'+h+'h '+m+'m</div>'+
+      '<button class="hr-btn" onclick="copyEntry('+i+')">Copy</button>'+
+      '<button class="hr-btn del" onclick="delEntry('+i+')">Del</button>'+
     '</div>';
   }).join('');
 }
 
-function copyLink(slug) {
-  var url = location.origin + location.pathname + '#/' + slug;
-  copyText(url);
-  showToast('Copied!');
+function copyEntry(i) {
+  var links = load();
+  if (!links[i]) return;
+  lastOut = links[i].out;
+  document.getElementById('outText').textContent = lastOut;
+  document.getElementById('outWrap').classList.add('on');
+  cp(lastOut);
+  toast('Copied!');
 }
 
-function delLink(slug) {
-  saveLinks(loadLinks().filter(function(l){ return l.slug !== slug; }));
-  renderList();
-  showToast('Deleted.');
+function delEntry(i) {
+  var links = load();
+  links.splice(i,1);
+  save(links);
+  renderHistory();
 }
 
-function copyText(t) {
+function clearAll() {
+  save([]);
+  document.getElementById('histCard').style.display='none';
+  toast('Cleared.');
+}
+
+function cp(t) {
   if (navigator.clipboard) {
-    navigator.clipboard.writeText(t).catch(function(){fallbackCopy(t);});
-  } else { fallbackCopy(t); }
+    navigator.clipboard.writeText(t).catch(function(){ fb(t); });
+  } else { fb(t); }
 }
-function fallbackCopy(t) {
-  var ta = document.createElement('textarea');
-  ta.value = t; document.body.appendChild(ta); ta.select();
-  document.execCommand('copy'); document.body.removeChild(ta);
+function fb(t) {
+  var ta=document.createElement('textarea');
+  ta.value=t; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try{ document.execCommand('copy'); } catch(e){}
+  document.body.removeChild(ta);
 }
 
-/* ── toast ── */
 var _tt;
-function showToast(msg) {
-  var el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
+function toast(msg) {
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
   clearTimeout(_tt);
-  _tt = setTimeout(function(){ el.classList.remove('show'); }, 2200);
+  _tt=setTimeout(function(){ el.classList.remove('show'); },2000);
 }
 
-/* ── init ── */
-window.addEventListener('hashchange', route);
-route();
-setInterval(function(){ if(document.getElementById('view-create').style.display!=='none') renderList(); }, 60000);
+// init
+renderHistory();
 </script>
 </body>
 </html>
