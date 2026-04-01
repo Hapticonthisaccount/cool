@@ -3,38 +3,35 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>lnkhide — Discord Link Hider</title>
+<title>lnkhide</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#080808;--surf:#0f0f0f;--border:#1a1a1a;--hi:#2a2a2a;
-  --text:#e0e0e0;--muted:#444;--green:#39ff14;--red:#ff4545;--blue:#4fa3ff;
+  --text:#e0e0e0;--muted:#444;--green:#39ff14;--red:#ff4545;
   --mono:'DM Mono',monospace;--head:'Syne',sans-serif;
 }
 body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;
   display:flex;flex-direction:column;align-items:center;padding:52px 16px 80px;overflow-x:hidden}
-
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
                    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
   background-size:36px 36px}
-
 .wrap{width:100%;max-width:580px;position:relative;z-index:1}
 
-/* header */
 h1{font-family:var(--head);font-weight:800;font-size:2.6rem;letter-spacing:-.03em;
   color:#fff;line-height:1;margin-bottom:4px}
 h1 span{color:var(--muted)}
 .sub{font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-bottom:44px}
 
-/* card */
 .card{background:var(--surf);border:1px solid var(--border);padding:28px;margin-bottom:10px;position:relative}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent)}
 
 .label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
   margin-bottom:7px;display:block}
+.field{margin-bottom:14px}.field:last-child{margin-bottom:0}
 
 input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
   font-family:var(--mono);font-size:13px;padding:11px 13px;outline:none;
@@ -42,77 +39,73 @@ input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(-
 input:focus{border-color:var(--hi)}
 input::placeholder{color:#222}
 
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.field{margin-bottom:10px}.field:last-child{margin-bottom:0}
-
 .err{font-size:10px;color:var(--red);margin-top:5px;display:none}.err.on{display:block}
-.hint{font-size:10px;color:#282828;margin-top:5px;line-height:1.5}
+.hint{font-size:10px;color:#2a2a2a;margin-top:5px;line-height:1.6}
 
-/* preview box */
-.preview-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:8px}
+/* discord preview */
+.pv-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
 .dc-mock{background:#313338;border-radius:6px;padding:14px 16px;display:flex;align-items:flex-start;gap:10px}
-.dc-avatar{width:36px;height:36px;border-radius:50%;background:#5865f2;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;
+.dc-av{width:36px;height:36px;border-radius:50%;background:#5865f2;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;
   color:#fff;font-family:var(--head)}
-.dc-bubble{flex:1}
+.dc-b{flex:1;min-width:0}
 .dc-name{font-size:11px;color:#00b0f4;font-weight:600;margin-bottom:4px;
   font-family:-apple-system,BlinkMacSystemFont,sans-serif}
-.dc-msg{font-size:14px;color:#dbdee1;line-height:1.5;word-break:break-word;
+.dc-msg{font-size:14px;color:#dbdee1;line-height:1.5;word-break:break-all;
   font-family:-apple-system,BlinkMacSystemFont,sans-serif}
 .dc-msg a{color:#00b0f4;text-decoration:none}
 .dc-msg a:hover{text-decoration:underline}
 
-/* generate btn */
 .btn{width:100%;padding:14px;background:var(--text);color:var(--bg);border:none;
   font-family:var(--head);font-weight:700;font-size:13px;letter-spacing:.08em;
-  text-transform:uppercase;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:16px}
+  text-transform:uppercase;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:14px}
 .btn:hover{opacity:.85}.btn:active{transform:scale(.99)}
 
 /* output */
-.output-wrap{margin-top:10px;display:none}.output-wrap.on{display:block;animation:up .25s ease}
-@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.out-wrap{margin-top:10px;display:none}.out-wrap.on{display:block;animation:up .22s ease}
+@keyframes up{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 
 .out-box{background:var(--bg);border:1px solid var(--border);padding:14px;
-  display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.out-text{flex:1;font-size:13px;color:var(--green);word-break:break-all;line-height:1.5}
+  display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.out-text{flex:1;font-size:12px;color:var(--green);word-break:break-all;line-height:1.6;user-select:all}
 .out-copy{padding:7px 14px;background:transparent;border:1px solid var(--hi);
   color:var(--text);font-family:var(--mono);font-size:10px;cursor:pointer;
-  white-space:nowrap;transition:background .15s;letter-spacing:.06em;flex-shrink:0}
+  white-space:nowrap;transition:background .15s,border-color .15s,color .15s;
+  flex-shrink:0;letter-spacing:.06em;margin-top:1px}
 .out-copy:hover{background:rgba(255,255,255,.05)}
 .out-copy.ok{border-color:var(--green);color:var(--green)}
 
-.tip-box{background:var(--surf);border:1px solid var(--border);padding:14px 16px;margin-bottom:8px}
-.tip-title{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-.tip{font-size:11px;color:#3a3a3a;margin-bottom:6px;line-height:1.6;padding-left:12px;position:relative}
-.tip::before{content:'—';position:absolute;left:0;color:#282828}
+.info-box{background:var(--surf);border:1px solid var(--border);padding:14px 16px;margin-bottom:8px}
+.info-title{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.tip{font-size:11px;color:#383838;margin-bottom:6px;line-height:1.6;padding-left:12px;position:relative}
 .tip:last-child{margin-bottom:0}
+.tip::before{content:'—';position:absolute;left:0;color:#282828}
 .tip code{color:#555;background:#141414;padding:1px 5px}
 
 /* history */
-.hist-card{background:var(--surf);border:1px solid var(--border);padding:24px 28px;margin-bottom:10px}
-.hist-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.hist-title{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.hist-clear{font-size:10px;color:#333;cursor:pointer;letter-spacing:.06em;
-  padding:4px 8px;border:1px solid #1a1a1a;background:transparent;
-  font-family:var(--mono);transition:color .15s,border-color .15s}
-.hist-clear:hover{color:var(--red);border-color:#2a1a1a}
+.hist{background:var(--surf);border:1px solid var(--border);padding:22px 26px;
+  margin-bottom:10px;display:none}
+.hist-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.hist-ttl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.hist-clr{font-size:10px;color:#2a2a2a;cursor:pointer;padding:4px 8px;
+  border:1px solid #1a1a1a;background:transparent;font-family:var(--mono);
+  transition:color .15s,border-color .15s}
+.hist-clr:hover{color:var(--red);border-color:#2a1212}
 
-.hist-list{display:flex;flex-direction:column;gap:6px}
-.hist-row{background:var(--bg);border:1px solid var(--border);padding:10px 12px;
-  display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.hr-text{flex:1;min-width:0}
-.hr-main{font-size:11px;color:var(--green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
-.hr-dest{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hr-ttl{font-size:10px;color:#2a2a2a;white-space:nowrap;flex-shrink:0}
-.hr-btn{padding:5px 10px;border:1px solid var(--hi);background:transparent;
+.h-list{display:flex;flex-direction:column;gap:6px}
+.h-row{background:var(--bg);border:1px solid var(--border);padding:10px 12px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.h-info{flex:1;min-width:0}
+.h-fake{font-size:11px;color:#00b0f4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.h-real{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-ttl{font-size:10px;color:#262626;white-space:nowrap;flex-shrink:0}
+.h-btns{display:flex;gap:5px;flex-shrink:0}
+.hbtn{padding:5px 10px;border:1px solid var(--hi);background:transparent;
   color:var(--text);font-family:var(--mono);font-size:10px;cursor:pointer;transition:background .15s}
-.hr-btn:hover{background:rgba(255,255,255,.05)}
-.hr-btn.del{border-color:#1e1e1e;color:#333}.hr-btn.del:hover{color:var(--red);border-color:#2a1212}
+.hbtn:hover{background:rgba(255,255,255,.05)}
+.hbtn.d{border-color:#1e1e1e;color:#2e2e2e}.hbtn.d:hover{color:var(--red);border-color:#2a1212}
+.empty{font-size:11px;color:#1e1e1e;text-align:center;padding:14px 0}
 
-.empty{font-size:11px;color:#1e1e1e;text-align:center;padding:16px 0}
-
-/* toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);
   background:var(--surf);border:1px solid var(--hi);color:var(--text);
   font-family:var(--mono);font-size:11px;padding:8px 18px;opacity:0;
@@ -124,215 +117,190 @@ input::placeholder{color:#222}
 <div class="wrap">
 
   <h1>lnk<span>hide</span></h1>
-  <div class="sub">Discord Markdown Link Disguiser</div>
+  <div class="sub">Discord Link Disguiser</div>
 
-  <!-- Input card -->
   <div class="card">
+
     <div class="field">
-      <label class="label">Text shown in Discord</label>
-      <input id="visText" type="text" placeholder="click here, free stuff, etc."
-             oninput="updatePreview()" maxlength="200"/>
-      <div class="err" id="err-text">Enter the visible text</div>
-    </div>
-    <div class="field">
-      <label class="label">Real URL (hidden behind the text)</label>
-      <input id="realUrl" type="url" placeholder="https://your-actual-link.com"
+      <label class="label">Fake URL (what people see)</label>
+      <input id="fakeUrl" type="text" placeholder="https://www.roblox.com/users/5994573209/profile"
              oninput="updatePreview()"/>
-      <div class="err" id="err-url">Enter a valid URL (https://...)</div>
+      <div class="hint">This shows as the clickable blue link in Discord. Make it look like anything.</div>
+      <div class="err" id="err-fake">Enter the fake URL to display</div>
     </div>
-    <div class="field" style="margin-top:4px">
-      <div class="preview-label">Preview in Discord</div>
+
+    <div class="field">
+      <label class="label">Real URL (where they actually go)</label>
+      <input id="realUrl" type="url" placeholder="https://your-actual-destination.com"
+             oninput="updatePreview()"/>
+      <div class="err" id="err-real">Enter a valid URL (https://...)</div>
+    </div>
+
+    <div class="field">
+      <div class="pv-label">Discord Preview</div>
       <div class="dc-mock">
-        <div class="dc-avatar">Y</div>
-        <div class="dc-bubble">
+        <div class="dc-av">Y</div>
+        <div class="dc-b">
           <div class="dc-name">you</div>
-          <div class="dc-msg" id="dc-preview">
-            hey check this out <a href="#">click here</a>
+          <div class="dc-msg" id="dc-pv">
+            <a href="#" onclick="return false">https://www.roblox.com/users/5994573209/profile</a>
           </div>
         </div>
       </div>
-      <div class="hint">This is exactly how it looks. No embed, no preview — just a clickable word.</div>
+      <div class="hint">Looks like a real link. Goes somewhere else.</div>
     </div>
+
   </div>
 
   <button class="btn" onclick="generate()">Generate &amp; Copy ↗</button>
 
-  <!-- Output -->
-  <div class="output-wrap" id="outWrap">
+  <div class="out-wrap" id="outWrap">
     <div class="out-box">
       <div class="out-text" id="outText"></div>
-      <button class="out-copy" id="copyBtn" onclick="copyOut()">Copy</button>
+      <button class="out-copy" id="copyBtn" onclick="doCopy()">Copy</button>
     </div>
-    <div class="tip-box">
-      <div class="tip-title">How to use in Discord</div>
-      <div class="tip">Paste as-is. The text shows as a blue clickable link, the URL stays hidden.</div>
-      <div class="tip">Works in DMs, servers, anywhere Discord renders markdown.</div>
-      <div class="tip">Wrap in <code>&lt; &gt;</code> to also suppress any embed: <code>&lt;[text](url)&gt;</code></div>
-      <div class="tip">Does NOT work in Discord usernames or status — only in messages.</div>
+    <div class="info-box">
+      <div class="info-title">How to use</div>
+      <div class="tip">Paste directly into any Discord message.</div>
+      <div class="tip">The blue link shows your fake URL — clicking it goes to the real one.</div>
+      <div class="tip">No embed preview, no spoiler — just a clean disguised link.</div>
+      <div class="tip">Works in DMs, servers, group chats everywhere.</div>
     </div>
   </div>
 
-  <!-- History -->
-  <div class="hist-card" id="histCard" style="display:none">
-    <div class="hist-header">
-      <div class="hist-title">Recent — expires after 8h</div>
-      <button class="hist-clear" onclick="clearAll()">Clear all</button>
+  <div class="hist" id="hist">
+    <div class="hist-top">
+      <div class="hist-ttl">Recent — 8h expiry</div>
+      <button class="hist-clr" onclick="clearAll()">Clear all</button>
     </div>
-    <div class="hist-list" id="histList"></div>
+    <div class="h-list" id="hList"></div>
   </div>
 
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-const KEY = 'lnkhide_v2';
-const TTL = 8 * 60 * 60 * 1000;
+var KEY='lnkhide_v3', TTL=8*60*60*1000, lastOut='';
 
-function load() {
-  try {
-    const r = localStorage.getItem(KEY);
-    if (!r) return [];
-    return JSON.parse(r).filter(function(l){ return Date.now()-l.ts < TTL; });
-  } catch(e){ return []; }
+function load(){
+  try{var r=localStorage.getItem(KEY);if(!r)return[];
+    return JSON.parse(r).filter(function(l){return Date.now()-l.ts<TTL;});}
+  catch(e){return[];}
 }
-function save(arr){ localStorage.setItem(KEY, JSON.stringify(arr)); }
+function save(a){localStorage.setItem(KEY,JSON.stringify(a));}
 
-function updatePreview() {
-  var text = document.getElementById('visText').value || 'click here';
-  var url  = document.getElementById('realUrl').value || '#';
-  var safe = url.replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  document.getElementById('dc-preview').innerHTML =
-    'hey check this out <a href="'+safe+'" onclick="return false">'+
-    escHtml(text)+'</a>';
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function updatePreview(){
+  var fake=document.getElementById('fakeUrl').value||'https://www.roblox.com/users/5994573209/profile';
+  var real=document.getElementById('realUrl').value||'#';
+  document.getElementById('dc-pv').innerHTML=
+    '<a href="'+esc(real)+'" onclick="return false">'+esc(fake)+'</a>';
 }
 
-function escHtml(s){
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function isUrl(s){
+  try{var u=new URL(s);return u.protocol==='https:'||u.protocol==='http:';}catch(e){return false;}
 }
 
-var lastOut = '';
+function generate(){
+  var fake=document.getElementById('fakeUrl').value.trim();
+  var real=document.getElementById('realUrl').value.trim();
 
-function generate() {
-  var text = document.getElementById('visText').value.trim();
-  var url  = document.getElementById('realUrl').value.trim();
+  var ef=document.getElementById('err-fake');
+  var er=document.getElementById('err-real');
+  ef.classList.remove('on');er.classList.remove('on');
 
-  var et = document.getElementById('err-text');
-  var eu = document.getElementById('err-url');
-  et.classList.remove('on'); eu.classList.remove('on');
+  var ok=true;
+  if(!fake){ef.classList.add('on');ok=false;}
+  if(!isUrl(real)){er.classList.add('on');ok=false;}
+  if(!ok)return;
 
-  var ok = true;
-  if (!text) { et.classList.add('on'); ok = false; }
-  if (!isUrl(url)) { eu.classList.add('on'); ok = false; }
-  if (!ok) return;
+  // Discord markdown: [fake](real)
+  lastOut='['+fake+']('+real+')';
 
-  var out = '['+text+']('+url+')';
-  lastOut = out;
-
-  document.getElementById('outText').textContent = out;
+  document.getElementById('outText').textContent=lastOut;
   document.getElementById('outWrap').classList.add('on');
 
-  var copyBtn = document.getElementById('copyBtn');
-  copyBtn.classList.remove('ok');
-  copyBtn.textContent = 'Copy';
+  var btn=document.getElementById('copyBtn');
+  btn.classList.remove('ok');btn.textContent='Copy';
 
-  // save to history
-  var links = load();
-  links.unshift({ text:text, url:url, out:out, ts:Date.now() });
-  if (links.length > 20) links = links.slice(0, 20);
+  var links=load();
+  links.unshift({fake:fake,real:real,out:lastOut,ts:Date.now()});
+  if(links.length>30)links=links.slice(0,30);
   save(links);
 
-  copyOut(true);
-  renderHistory();
-}
-
-function copyOut(silent) {
-  if (!lastOut) return;
   cp(lastOut);
-  var btn = document.getElementById('copyBtn');
-  btn.textContent = 'Copied!';
-  btn.classList.add('ok');
-  setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('ok'); }, 2000);
-  if (!silent) toast('Copied!');
-  else toast('Generated & copied to clipboard!');
+  btn.textContent='Copied!';btn.classList.add('ok');
+  setTimeout(function(){btn.textContent='Copy';btn.classList.remove('ok');},2000);
+  toast('Generated & copied!');
+  renderHist();
 }
 
-function isUrl(s) {
-  try { var u=new URL(s); return u.protocol==='https:'||u.protocol==='http:'; }
-  catch(e){ return false; }
+function doCopy(){
+  if(!lastOut)return;
+  cp(lastOut);
+  var btn=document.getElementById('copyBtn');
+  btn.textContent='Copied!';btn.classList.add('ok');
+  setTimeout(function(){btn.textContent='Copy';btn.classList.remove('ok');},2000);
+  toast('Copied!');
 }
 
-function renderHistory() {
-  var links = load();
-  var card = document.getElementById('histCard');
-  var list = document.getElementById('histList');
-
-  if (!links.length) { card.style.display='none'; return; }
-  card.style.display='block';
-
-  var now = Date.now();
-  list.innerHTML = links.map(function(l,i){
-    var left = TTL-(now-l.ts);
-    var h = Math.floor(left/3600000);
-    var m = Math.floor((left%3600000)/60000);
-    return '<div class="hist-row">'+
-      '<div class="hr-text">'+
-        '<div class="hr-main">'+escHtml(l.out)+'</div>'+
-        '<div class="hr-dest">'+escHtml(l.url)+'</div>'+
+function renderHist(){
+  var links=load();
+  var hist=document.getElementById('hist');
+  var list=document.getElementById('hList');
+  if(!links.length){hist.style.display='none';return;}
+  hist.style.display='block';
+  var now=Date.now();
+  list.innerHTML=links.map(function(l,i){
+    var left=TTL-(now-l.ts);
+    var h=Math.floor(left/3600000),m=Math.floor((left%3600000)/60000);
+    return '<div class="h-row">'+
+      '<div class="h-info">'+
+        '<div class="h-fake">'+esc(l.fake)+'</div>'+
+        '<div class="h-real">&#8594; '+esc(l.real)+'</div>'+
       '</div>'+
-      '<div class="hr-ttl">'+h+'h '+m+'m</div>'+
-      '<button class="hr-btn" onclick="copyEntry('+i+')">Copy</button>'+
-      '<button class="hr-btn del" onclick="delEntry('+i+')">Del</button>'+
+      '<div class="h-ttl">'+h+'h '+m+'m</div>'+
+      '<div class="h-btns">'+
+        '<button class="hbtn" onclick="copyEntry('+i+')">Copy</button>'+
+        '<button class="hbtn d" onclick="delEntry('+i+')">Del</button>'+
+      '</div>'+
     '</div>';
   }).join('');
 }
 
-function copyEntry(i) {
-  var links = load();
-  if (!links[i]) return;
-  lastOut = links[i].out;
-  document.getElementById('outText').textContent = lastOut;
+function copyEntry(i){
+  var links=load();if(!links[i])return;
+  lastOut=links[i].out;
+  document.getElementById('outText').textContent=lastOut;
   document.getElementById('outWrap').classList.add('on');
-  cp(lastOut);
-  toast('Copied!');
+  cp(lastOut);toast('Copied!');
 }
+function delEntry(i){
+  var links=load();links.splice(i,1);save(links);renderHist();
+}
+function clearAll(){save([]);document.getElementById('hist').style.display='none';toast('Cleared.');}
 
-function delEntry(i) {
-  var links = load();
-  links.splice(i,1);
-  save(links);
-  renderHistory();
+function cp(t){
+  if(navigator.clipboard){navigator.clipboard.writeText(t).catch(function(){fb(t);});}
+  else{fb(t);}
 }
-
-function clearAll() {
-  save([]);
-  document.getElementById('histCard').style.display='none';
-  toast('Cleared.');
-}
-
-function cp(t) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(t).catch(function(){ fb(t); });
-  } else { fb(t); }
-}
-function fb(t) {
-  var ta=document.createElement('textarea');
-  ta.value=t; ta.style.position='fixed'; ta.style.opacity='0';
-  document.body.appendChild(ta); ta.focus(); ta.select();
-  try{ document.execCommand('copy'); } catch(e){}
+function fb(t){
+  var ta=document.createElement('textarea');ta.value=t;
+  ta.style.cssText='position:fixed;opacity:0;top:0;left:0';
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand('copy');}catch(e){}
   document.body.removeChild(ta);
 }
 
 var _tt;
-function toast(msg) {
+function toast(msg){
   var el=document.getElementById('toast');
-  el.textContent=msg; el.classList.add('show');
-  clearTimeout(_tt);
-  _tt=setTimeout(function(){ el.classList.remove('show'); },2000);
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(_tt);_tt=setTimeout(function(){el.classList.remove('show');},2000);
 }
 
-// init
-renderHistory();
+renderHist();
 </script>
 </body>
 </html>
